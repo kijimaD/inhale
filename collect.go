@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -27,7 +26,8 @@ func (fn visitFn) Visit(node ast.Node) ast.Visitor {
 	return fn(node)
 }
 
-func walkDir(path string) error {
+func walkDir(path string) (References, error) {
+	refs := References{}
 	visitFile := func(path string, f os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -49,22 +49,19 @@ func walkDir(path string) error {
 		if err != nil {
 			return err
 		}
-		refs := collectReferences(fa)
-		fmt.Printf("%#v\n", refs)
+		refs = collectReferences(fa, refs)
 
 		return nil
 	}
 	err := filepath.Walk(path, visitFile)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return refs, nil
 }
 
-func collectReferences(f *ast.File) References {
-	refs := References{}
-
+func collectReferences(f *ast.File, refs References) References {
 	var visitor visitFn
 	visitor = func(node ast.Node) ast.Visitor {
 		if node == nil {
@@ -95,6 +92,7 @@ func collectReferences(f *ast.File) References {
 		return visitor
 	}
 	ast.Walk(visitor, f)
+
 	return refs
 }
 
