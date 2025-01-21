@@ -17,6 +17,8 @@ func TestCollectReferences(t *testing.T) {
   )
 
   func main() {
+          fmt.Println("hello")
+
           title := strings.Title("hello world")
           rep := strings.Repeat("a", 10)
           fmt.Println(title, rep)
@@ -26,15 +28,15 @@ func TestCollectReferences(t *testing.T) {
 	assert.NoError(t, err)
 
 	refs := collectReferences(f)
-	expected := map[string]map[string]bool{
-		"fmt": map[string]bool{
-			"Println": true,
+	expected := map[string]map[string]int(map[string]map[string]int{
+		"fmt": map[string]int{
+			"Println": 2,
 		},
-		"strings": map[string]bool{
-			"Repeat": true,
-			"Title":  true,
-		},
-	}
+		"strings": map[string]int{
+			"Repeat": 1,
+			"Title":  1,
+		}},
+	)
 	assert.Equal(t, expected, refs)
 }
 

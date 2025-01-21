@@ -18,7 +18,7 @@ type (
 	PackageName = string
 	Symbol      = string
 
-	References = map[PackageName]map[Symbol]bool
+	References = map[PackageName]map[Symbol]int
 )
 
 type visitFn func(node ast.Node) ast.Visitor
@@ -62,8 +62,6 @@ func walkDir(path string) error {
 	return nil
 }
 
-func processFile()
-
 func collectReferences(f *ast.File) References {
 	refs := References{}
 
@@ -89,10 +87,10 @@ func collectReferences(f *ast.File) References {
 			pkgName := xident.Name
 			r := refs[pkgName]
 			if r == nil {
-				r = make(map[string]bool)
+				r = make(map[string]int)
 				refs[pkgName] = r
 			}
-			r[v.Sel.Name] = true
+			r[v.Sel.Name] += 1
 		}
 		return visitor
 	}
