@@ -36,6 +36,49 @@ func TestCollectReferences(t *testing.T) {
 	assert.Equal(t, expected, refs)
 }
 
+func TestCollectImports(t *testing.T) {
+	src := `package main
+
+  import (
+          "fmt"
+          abc "fmt"
+          "strings"
+          "github.com/kijimaD/example"
+  )
+
+  func main() {
+          fmt.Println("hello")
+
+          title := strings.Title("hello world")
+          rep := strings.Repeat("a", 10)
+          fmt.Println(title, rep)
+          abc.Println("hello")
+  }`
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "dummy.go", src, parser.AllErrors)
+	assert.NoError(t, err)
+
+	expect := []ImportInfo{
+		{
+			ImportPath: "fmt",
+			AliasName:  "",
+		},
+		{
+			ImportPath: "fmt",
+			AliasName:  "abc",
+		},
+		{
+			ImportPath: "strings",
+			AliasName:  "",
+		},
+		{
+			ImportPath: "github.com/kijimaD/example",
+			AliasName:  "",
+		},
+	}
+	assert.Equal(t, expect, collectImports(f))
+}
+
 func TestWalkDir(t *testing.T) {
 	refs, err := walkDir("./testdata")
 	assert.NoError(t, err)

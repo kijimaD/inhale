@@ -96,6 +96,31 @@ func collectReferences(f *ast.File, refs References) References {
 	return refs
 }
 
+type ImportInfo struct {
+	ImportPath string // import path, e.g. "crypto/rand".
+	AliasName  string // import name, e.g. "crand", or "" if none.
+}
+
+func collectImports(f *ast.File) []ImportInfo {
+	var imports []ImportInfo
+	for _, imp := range f.Imports {
+		var name string
+		if imp.Name != nil {
+			name = imp.Name.Name
+		}
+		if imp.Path.Value == `"C"` || name == "_" || name == "." {
+			continue
+		}
+		path := strings.Trim(imp.Path.Value, `"`)
+		imports = append(imports, ImportInfo{
+			ImportPath: path,
+			AliasName:  name,
+		})
+	}
+
+	return imports
+}
+
 func isGoFile(f os.FileInfo) bool {
 	name := f.Name()
 
