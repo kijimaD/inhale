@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"go/parser"
 	"go/token"
 	"testing"
@@ -14,6 +15,7 @@ func TestCollectReferences(t *testing.T) {
   import (
           "fmt"
           "strings"
+          "github.com/kijimaD/example"
   )
 
   func main() {
@@ -22,6 +24,7 @@ func TestCollectReferences(t *testing.T) {
           title := strings.Title("hello world")
           rep := strings.Repeat("a", 10)
           fmt.Println(title, rep)
+          example.Hello("hi")
   }`
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, "dummy.go", src, parser.AllErrors)
@@ -31,7 +34,9 @@ func TestCollectReferences(t *testing.T) {
 	collectReferences(f, refs)
 	expected := map[string]map[string]int(map[string]map[string]int{
 		"fmt":     map[string]int{"Println": 2},
-		"strings": map[string]int{"Repeat": 1, "Title": 1}},
+		"strings": map[string]int{"Repeat": 1, "Title": 1},
+		"example": map[string]int{"Hello": 1},
+	},
 	)
 	assert.Equal(t, expected, refs)
 }
@@ -79,18 +84,31 @@ func TestCollectImports(t *testing.T) {
 	assert.Equal(t, expect, collectImports(f))
 }
 
+func TestFilterStdlib(t *testing.T) {
+	refs := map[string]map[string]int(map[string]map[string]int{
+		"fmt":     map[string]int{"Println": 2},
+		"strings": map[string]int{"Repeat": 1, "Title": 1},
+		"example": map[string]int{"Hello": 1},
+	})
+
+	stdrefs := filterStdLib(refs)
+	expect := map[string]map[string]int(map[string]map[string]int{
+		"fmt":     map[string]int{"Println": 2},
+		"strings": map[string]int{"Repeat": 1, "Title": 1},
+	})
+	assert.Equal(t, expect, stdrefs)
+}
+
 func TestWalkDir(t *testing.T) {
 	refs, err := walkDir("./testdata")
 	assert.NoError(t, err)
 
-	// TODO: パッケージ名をインポート名に変える
+	// とりあえず標準ライブラリ以外は除外されている
 	expect := map[string]map[string]int{
 		"ast":     map[string]int{"File": 3, "FuncDecl": 1},
-		"astutil": map[string]int{"Imports": 1},
 		"bufio":   map[string]int{"NewReader": 1},
 		"bytes":   map[string]int{"Buffer": 3, "IndexByte": 1, "LastIndex": 1, "NewReader": 1, "ReplaceAll": 1},
 		"context": map[string]int{"Context": 1},
-		"event":   map[string]int{"Start": 1},
 		"fmt":     map[string]int{"Fprint": 1},
 		"format":  map[string]int{"Source": 1},
 		"io":      map[string]int{"EOF": 1, "Reader": 1},
@@ -100,9 +118,78 @@ func TestWalkDir(t *testing.T) {
 		"regexp":  map[string]int{"MustCompile": 1},
 		"strconv": map[string]int{"Unquote": 1},
 		"strings": map[string]int{"Contains": 2, "HasPrefix": 5},
-		"testenv": map[string]int{"ExitIfSmallMachine": 1},
 		"testing": map[string]int{"M": 1},
 		"token":   map[string]int{"FileSet": 2, "NewFileSet": 3},
 	}
 	assert.Equal(t, expect, refs)
+}
+
+func TestRun(t *testing.T) {
+	buf := bytes.Buffer{}
+	Run(&buf, "./testdata")
+
+	// fmt.Printf("%#v\n", expect)
+	expect := `{
+	"ast": {
+		"File": 3,
+		"FuncDecl": 1
+	},
+	"bufio": {
+		"NewReader": 1
+	},
+	"bytes": {
+		"Buffer": 3,
+		"IndexByte": 1,
+		"LastIndex": 1,
+		"NewReader": 1,
+		"ReplaceAll": 1
+	},
+	"context": {
+		"Context": 1
+	},
+	"fmt": {
+		"Fprint": 1
+	},
+	"format": {
+		"Source": 1
+	},
+	"io": {
+		"EOF": 1,
+		"Reader": 1
+	},
+	"os": {
+		"Exit": 1
+	},
+	"parser": {
+		"AllErrors": 3,
+		"Mode": 3,
+		"ParseComments": 3,
+		"ParseFile": 4,
+		"SkipObjectResolution": 2
+	},
+	"printer": {
+		"Config": 1,
+		"TabIndent": 1,
+		"UseSpaces": 1
+	},
+	"regexp": {
+		"MustCompile": 1
+	},
+	"strconv": {
+		"Unquote": 1
+	},
+	"strings": {
+		"Contains": 2,
+		"HasPrefix": 5
+	},
+	"testing": {
+		"M": 1
+	},
+	"token": {
+		"FileSet": 2,
+		"NewFileSet": 3
+	}
+}
+`
+	assert.Equal(t, expect, buf.String())
 }
