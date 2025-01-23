@@ -105,21 +105,21 @@ func TestWalkDir(t *testing.T) {
 
 	// とりあえず標準ライブラリ以外は除外されている
 	expect := map[string]map[string]int{
-		"ast":     map[string]int{"File": 3, "FuncDecl": 1},
-		"bufio":   map[string]int{"NewReader": 1},
-		"bytes":   map[string]int{"Buffer": 3, "IndexByte": 1, "LastIndex": 1, "NewReader": 1, "ReplaceAll": 1},
-		"context": map[string]int{"Context": 1},
-		"fmt":     map[string]int{"Fprint": 1},
-		"format":  map[string]int{"Source": 1},
-		"io":      map[string]int{"EOF": 1, "Reader": 1},
-		"os":      map[string]int{"Exit": 1},
-		"parser":  map[string]int{"AllErrors": 3, "Mode": 3, "ParseComments": 3, "ParseFile": 4, "SkipObjectResolution": 2},
-		"printer": map[string]int{"Config": 1, "TabIndent": 1, "UseSpaces": 1},
-		"regexp":  map[string]int{"MustCompile": 1},
-		"strconv": map[string]int{"Unquote": 1},
-		"strings": map[string]int{"Contains": 2, "HasPrefix": 5},
-		"testing": map[string]int{"M": 1},
-		"token":   map[string]int{"FileSet": 2, "NewFileSet": 3},
+		"go/ast":     map[string]int{"File": 3, "FuncDecl": 1},
+		"bufio":      map[string]int{"NewReader": 1},
+		"bytes":      map[string]int{"Buffer": 3, "IndexByte": 1, "LastIndex": 1, "NewReader": 1, "ReplaceAll": 1},
+		"context":    map[string]int{"Context": 1},
+		"fmt":        map[string]int{"Fprint": 1},
+		"go/format":  map[string]int{"Source": 1},
+		"io":         map[string]int{"EOF": 1, "Reader": 1},
+		"os":         map[string]int{"Exit": 1},
+		"go/parser":  map[string]int{"AllErrors": 3, "Mode": 3, "ParseComments": 3, "ParseFile": 4, "SkipObjectResolution": 2},
+		"go/printer": map[string]int{"Config": 1, "TabIndent": 1, "UseSpaces": 1},
+		"regexp":     map[string]int{"MustCompile": 1},
+		"strconv":    map[string]int{"Unquote": 1},
+		"strings":    map[string]int{"Contains": 2, "HasPrefix": 5},
+		"testing":    map[string]int{"M": 1},
+		"go/token":   map[string]int{"FileSet": 2, "NewFileSet": 3},
 	}
 	assert.Equal(t, expect, refs)
 }
@@ -128,12 +128,7 @@ func TestRun(t *testing.T) {
 	buf := bytes.Buffer{}
 	Run(&buf, "./testdata")
 
-	// fmt.Printf("%#v\n", expect)
 	expect := `{
-	"ast": {
-		"File": 3,
-		"FuncDecl": 1
-	},
 	"bufio": {
 		"NewReader": 1
 	},
@@ -150,8 +145,28 @@ func TestRun(t *testing.T) {
 	"fmt": {
 		"Fprint": 1
 	},
-	"format": {
+	"go/ast": {
+		"File": 3,
+		"FuncDecl": 1
+	},
+	"go/format": {
 		"Source": 1
+	},
+	"go/parser": {
+		"AllErrors": 3,
+		"Mode": 3,
+		"ParseComments": 3,
+		"ParseFile": 4,
+		"SkipObjectResolution": 2
+	},
+	"go/printer": {
+		"Config": 1,
+		"TabIndent": 1,
+		"UseSpaces": 1
+	},
+	"go/token": {
+		"FileSet": 2,
+		"NewFileSet": 3
 	},
 	"io": {
 		"EOF": 1,
@@ -159,18 +174,6 @@ func TestRun(t *testing.T) {
 	},
 	"os": {
 		"Exit": 1
-	},
-	"parser": {
-		"AllErrors": 3,
-		"Mode": 3,
-		"ParseComments": 3,
-		"ParseFile": 4,
-		"SkipObjectResolution": 2
-	},
-	"printer": {
-		"Config": 1,
-		"TabIndent": 1,
-		"UseSpaces": 1
 	},
 	"regexp": {
 		"MustCompile": 1
@@ -184,10 +187,6 @@ func TestRun(t *testing.T) {
 	},
 	"testing": {
 		"M": 1
-	},
-	"token": {
-		"FileSet": 2,
-		"NewFileSet": 3
 	}
 }
 `

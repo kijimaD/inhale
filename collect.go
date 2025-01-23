@@ -134,7 +134,7 @@ func filterStdLib(refs References) References {
 	for k, _ := range stdlib.PackageSymbols {
 		stdbase := path.Base(k)
 		if v, ok := refs[stdbase]; ok {
-			stdrefs[stdbase] = v
+			stdrefs[k] = v
 		}
 	}
 
