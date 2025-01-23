@@ -142,7 +142,9 @@ func filterStdLib(refs References) References {
 					}
 				}
 			}
-			stdrefs[k] = newpkgRef
+			if len(newpkgRef) > 0 {
+				stdrefs[k] = newpkgRef
+			}
 		}
 	}
 

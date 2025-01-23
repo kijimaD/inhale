@@ -88,6 +88,7 @@ func TestFilterStdlib(t *testing.T) {
 	refs := map[string]map[string]int(map[string]map[string]int{
 		"fmt":     map[string]int{"Println": 2},
 		"strings": map[string]int{"Repeat": 1, "Title": 1, "NotExistMethod": 1},
+		"os":      map[string]int{"NotExistMethod": 1},
 		"example": map[string]int{"Hello": 1},
 	})
 
