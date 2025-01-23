@@ -131,10 +131,18 @@ func collectReferences(f *ast.File, refs References) References {
 // 標準ライブラリだけ残す
 func filterStdLib(refs References) References {
 	stdrefs := References{}
-	for k, _ := range stdlib.PackageSymbols {
+	for k, stds := range stdlib.PackageSymbols {
 		stdbase := path.Base(k)
-		if v, ok := refs[stdbase]; ok {
-			stdrefs[k] = v
+		if ref, ok := refs[stdbase]; ok {
+			newpkgRef := map[string]int{}
+			for method, count := range ref {
+				for _, std := range stds {
+					if method == std.Name {
+						newpkgRef[method] = count
+					}
+				}
+			}
+			stdrefs[k] = newpkgRef
 		}
 	}
 
